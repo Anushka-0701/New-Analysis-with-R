@@ -1,0 +1,164 @@
+---
+title: "Descriptive Analysis for Chicago Crime Data 2021"
+author: "Anushka Jayasooriya"
+date: "3/12/2022"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+Import the R libraries
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(scales)
+```
+
+Import the relevant datasets
+
+```{r}
+crime<-read.csv("./Data/2021_Crime_Data.csv")
+crime_new<-read.csv("./Data/final_c.csv")
+```
+
+I have uploaded two datsets. crime is the pure dateset and crime_new is the extracted dataset using Python.
+```{r}
+head(crime)
+```
+```{r}
+totNUm_1<-crime %>% summarise(count=n())
+totNUm_1
+```
+
+The crime data set has included 205245 observations and 22 variables.
+Now we will see the another set calles crime_new.
+```{r}
+head(crime_new)
+```
+It is a extracted dataset and it has contained some temporal variables.They are Month,Week,Day and Hour. Furthermore it has include Primary type.
+
+Now we will see the relevant Primary type(Crime Species) counts on each wards
+```{r}
+crime_spe<-crime %>% 
+  group_by(Primary.Type) %>% 
+  summarise(Count = n())
+```
+```{r}
+crime_spe$Primary.Type
+```
+According to the R code 31 Primary types are included.
+```{r}
+head(crime_spe)
+```
+```{r}
+sum(crime_spe$Count)
+```
+Let we consier Primary type counts on each wards
+```{r}
+ward_counts<-crime %>% 
+  group_by(Ward) %>% 
+  summarise(Counts = n())
+```
+
+```{r}
+head(ward_counts)
+```
+```{r}
+ward_counts$Ward
+```
+There are 51 wards in this dataset and only one ward is unknown.
+
+```{r}
+sum(ward_counts$Counts)
+```
+
+Our main objective of this analysis is to get the total crime counts on each temporal variables for a particulat ward.
+```{r}
+crime_counts<-crime_new %>% 
+  group_by(Ward,Month,Week,Day,Hour,Primary.Type) %>% 
+  summarise(Counts = n())
+```
+
+```{r}
+head(crime_counts)
+```
+
+```{r}
+sum(crime_counts$Counts)
+```
+Let we see the most occured crimes in Chicago. Therefor we have to plot a bargraph on this senario.
+```{r}
+crime_spe %>% 
+  ggplot(aes(x = reorder(Primary.Type ,Count), y = Count)) +
+  geom_bar(stat = "identity", fill = "#759bb1") +
+  labs(x ="Primary Type", y = "Number of Crimes", title = "") + 
+  scale_y_continuous(label = comma) +
+  coord_flip() 
+```
+According to this Bar plot the most crime is Theft. futhermore top five crimes are Theft,Battery,Criminal Damage,Assault and Deceptive Practice.
+
+Now we will see how about the crime count variation among wards
+```{r}
+ward_counts %>% 
+  ggplot(aes(x = reorder(Ward ,Counts), y = Counts)) +
+  geom_bar(stat = "identity", fill = "#759bb1") +
+  labs(x ="Primary Type", y = "Number of Crimes", title = "") + 
+  scale_y_continuous(label = comma) +
+  coord_flip() 
+```
+According to this bargraph most incidents occured in 28th ward and least one is 19th ward.
+
+Let we see the temporal patterns using "crime counts" dataframe.
+
+```{r}
+head(crime_counts)
+```
+```{r}
+crime_counts %>% 
+  ggplot(aes(x = reorder(Month ,Counts), y = Counts)) +
+  geom_bar(stat = "identity", fill = "#798cb1") +
+  labs(x ="Month Number", y = "Total Crime Count", title = "Month Vs Count") + 
+  scale_y_continuous(label = comma) +
+  coord_flip() 
+```
+According that, October has occured more crime incidents and actually Autumn and Summar seasons.In February has occured less number of crimes.
+
+```{r}
+crime_counts %>% 
+  ggplot(aes(x = reorder(Week ,Counts), y = Counts)) +
+  geom_bar(stat = "identity", fill = "#798cb1") +
+  labs(x ="Week Number", y = "Total Crime Count", title = "Week Vs Count") + 
+  scale_y_continuous(label = comma) +
+  coord_flip() 
+```
+
+Most incidents occure in 39th week in 2021 and 1st week has the lowest crime incidents.
+
+```{r}
+crime_counts %>% 
+  ggplot(aes(x = reorder(Day ,Counts), y = Counts)) +
+  geom_bar(stat = "identity", fill = "#798cb1") +
+  labs(x ="Day of the Week", y = "Total Crime Count", title = "Day Vs Count") + 
+  scale_y_continuous(label = comma) +
+  coord_flip()
+```
+
+Friday and Saturday have occurred more crimes and Thursday has occured less incidents.
+
+```{r}
+crime_counts %>% 
+  ggplot(aes(x = reorder(Hour ,Counts), y = Counts)) +
+  geom_bar(stat = "identity", fill = "#798cb1") +
+  labs(x ="Hour", y = "Total Crime Count", title = "Hour Vs Count") + 
+  scale_y_continuous(label = comma) +
+  coord_flip() 
+```
+
+In the mid night is the dangerous time and 5 is the lowest.We can say in the morning period has more crime cases and evening time slots have occurred less cases.
+
+
+
+
